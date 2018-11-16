@@ -1,91 +1,11 @@
----
-title: "Week4ProjectFinal"
-author: "Travis Jones"
-date: "November 13, 2018"
-output: word_document
----
+Tidy version of the following dataset:
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+Human Activity Recognition Using Smartphones Dataset Version 1.0 By Jorge L. Reyes-Ortiz, Davide Anguita, Alessandro Ghio, Luca Oneto. Smartlab - Non Linear Complex Systems Laboratory DITEN - Universit‡ degli Studi di Genova. Via Opera Pia 11A, I-16145, Genoa, Italy. activityrecognition@smartlab.ws www.smartlab.ws
 
-## R Markdown
+Description: The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years. Each person performed six activities (walking, walkingupstairs, walkingdownstairs, sitting, standing, laying) wearing a smartphone (Samsung Galaxy S II) on the waist. Using its embedded accelerometer and gyroscope, we captured 3-axial linear acceleration and 3-axial angular velocity at a constant rate of 50Hz. The experiments have been video-recorded to label the data manually.
 
-#Merges the training and the test sets to create one data set.
-#Extracts only the measurements on the mean and standard deviation for each measurement.
-#Uses descriptive activity names to name the activities in the data set
-#Appropriately labels the data set with descriptive variable names.
-#From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+A thorough description of the complete dataset comes with the data which can be downloaded as described in the R code submitted.
 
-#Load files (do not need the intertial signals files)
+The complete dataset was merged, cleaned and only a subset was selected to createa tidy dataset. The processing script to achieve this can be found in the submitted R code.
 
-        based on the readme file it was clear that not all files included in the zipfile were required for the analysis. To enable a view of the data I downloaded each of them into [r] as a first step. I chose between 'labels' and 'features' from the readme and just went with features to be consistent throughout for referencing the appropriate files
-        
-activityLabels     <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/activity_labels.txt")
-dataFeaturesNames  <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/features.txt")
-
-dataActivityTest   <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/test/Y_test.txt")
-dataFeaturesTest   <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/test/X_test.txt")
-dataSubjectTest    <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/test/subject_test.txt")
-
-dataActivityTrain  <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/train/Y_train.txt")
-dataFeaturesTrain  <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/train/X_train.txt")
-dataSubjectTrain   <- read.table("C:/Users/travis.jones01/Desktop/UCI HAR Dataset/train/subject_train.txt")
-
-#Union the relevant subject, activity, and features 
-
-        View() of each of the datasets showed which ones would be able to be combined where the headers were consistent. I dropped the end of the naming as when combined the tables would all contain TestTrain and seemed redundant to repeat
-        
-dataSubject  <- rbind(dataSubjectTrain, dataSubjectTest)
-dataActivity <- rbind(dataActivityTrain, dataActivityTest)
-dataFeatures <- rbind(dataFeaturesTrain, dataFeaturesTest)
-
-#Name the columns but for dataFeatures select a subset of the columns in dataFeaturesNames
-
-        the headers were ambiguous for subject & activity. Also, dataFeaturesnames contained fields that were not necessary for the project completion so it was valuable to skinny the columns down to only what mattered
-        
-names(dataSubject)  <-c("subject")
-names(dataActivity) <- c("activity")
-names(dataFeatures) <- dataFeaturesNames$V2
-
-#Assumes row numbers are equal, join the data from subject to activity to features
-
-        the data was starting to become 'clean' in terms of consolidating but there was still opportunity to bring into a single data set. these steps allowed a single table that have a 1 to 1 or 'tidy' structure. cbind operates as what I know from sequel as a 'join' but is dependent on clean row alignment. I'm used to having to join on specific variables within a table.
-
-dataCombine <- cbind(dataSubject, dataActivity)
-Data <- cbind(dataFeatures, dataCombine)
-
-#identify the types of data we are interested in (mean and std)
-
-        this is just removing data via an OR statement that will then be referenced byt the table as a filter
-
-subdataFeaturesNames <- dataFeaturesNames$V2[grep("mean\\(\\)|std\\(\\)", dataFeaturesNames$V2)]
-
-#add subject & activity and then filter combined data to only relevant records
-
-        leveraging the previously built subdatafeaturesnames to use as a subset
-
-selectedNames <- c(as.character(subdataFeaturesNames), "subject", "activity" )
-Data <- subset(Data,select=selectedNames)
-
-#change out words to something that makes sense / is clean
-
-        this is subjcet to what I thought made sense. not all words have been cleaned up but mostly I wantd to get rid of abbreviations that were unclear or syntax that was not necessary like "-"
-
-names(Data) <- gsub('-mean','Mean', names(Data))
-names(Data) <- gsub('-std','Std', names(Data))
-names(Data) <- gsub('[-()]','', names(Data))
-names(Data) <- gsub("^t", "time", names(Data))
-names(Data) <- gsub("^f", "frequency", names(Data))
-names(Data) <- gsub("Gyro", "Gyroscope", names(Data))
-names(Data) <- gsub("Mag", "Magnitude", names(Data))
-names(Data) <- gsub("BodyBody", "Body", names(Data))
-
-# set column order and sort, write the new table to a txt file
-
-        this is taking steps for the final view of the data to have a particular order for columns and sort within the table
-
-library(plyr);
-Data2<-aggregate(. ~subject + activity, Data, mean)
-Data2<-Data2[order(Data2$subject,Data2$activity),]
-write.table(Data2, file = "tidydata.txt",row.name=FALSE)
+A complete list of the remaining variables and their description can be found in the codebook.
